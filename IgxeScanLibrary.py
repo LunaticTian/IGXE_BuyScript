@@ -14,7 +14,27 @@ import numpy as np
 
 # 文件信息读取
 def TxtReading():
-    pass
+    user={}
+    a=0
+    file = open("config.txt", "r+")
+    while 1:
+
+        line = file.readline()
+        if not line:
+            break
+        print(line)
+        if a == 0:
+            user['ID'] = line[3:]
+        if a == 1:
+            user['PassWord'] = line[9:]
+        if a == 2:
+            user['Payment_password'] = line[17:]
+        if a == 3:
+            user['Game'] = line[5:]
+        if a == 4:
+            user['Product']=line[8:]
+        a=a+1
+    return user
 
 
 
@@ -40,6 +60,8 @@ def Browser():
     # web = webdriver.Chrome(chrome_options=chrome_options)
 
     web = webdriver.Chrome("H:\Program Files (x86)\Chrome\Application\chromedriver.exe")
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    chrome_options.add_experimental_option("prefs", prefs)
     web.set_window_size(1280, 800)
     return web
 
@@ -53,7 +75,7 @@ def Log_in(web, user, password):
     web.find_element_by_xpath("//*[@id=\"username\"]").send_keys(str(user))
     web.find_element_by_xpath("//*[@id=\"password\"]").send_keys(str(password))
     # 点击登陆
-    web.find_element_by_xpath("//*[@id=\"login-form\"]/div[5]/input").send_keys(Keys.ENTER)
+    # web.find_element_by_xpath("//*[@id=\"login-form\"]/div[5]/input").send_keys(Keys.ENTER)
     return web
 
 
@@ -81,7 +103,7 @@ def Scan(web,Game,Article,Price,Passwd):
 
 def pay(web,url,Price,Passwd):
     web.get(url)
-    time.sleep(0.4)
+    time.sleep(0.3)
     # 点击批量购买
     web.find_element_by_xpath("//*[@id=\"js-btn-tradeBuy\"]").click()
     # 找到弹出的批量框
@@ -121,6 +143,7 @@ def pay(web,url,Price,Passwd):
                 #         Keys.ENTER)
                 #     pass
                 if Available_Balance > Available_Car:
+                    print("进入！！！")
                     web.find_element_by_xpath("//*[@id=\"pay-pwd\"]").send_keys(Passwd)
                     web.find_element_by_xpath("//*[@id=\"pay_order\"]").send_keys(Keys.ENTER)
                     # web.find_element_by_xpath("//*[@id=\"layui-layer2\"]")
@@ -158,11 +181,22 @@ def pay(web,url,Price,Passwd):
                 pay(web=web, url=url, Price=Price, Passwd=Passwd)
                 time.sleep(3)
         web.quit()
-
+@itchat.msg_register(itchat.content.TEXT)
+def text_reply(msg):
+    # 返回同样的文本消息
+    print(msg['Text'])
 
 if __name__ == "__main__":
     itchat.auto_login(hotReload=True)
     #itchat.send('text', toUserName='filehelper')
-    itchat.send_msg('1text')
-    a=Log_in(web=Browser(),user="",password="");
-    Scan(web=a,Game="dota2",Article ="新月骑手战盾", Price="1",Passwd="")
+    # print("123")
+    # itchat.run()
+    user = TxtReading()
+    id = user['ID']
+    password = user['PassWord']
+    Payment_password = user['Payment_password']
+    Game = user['Game']
+    Product = user['Product']
+
+    a = Log_in(web=Browser(),user=id,password=password)
+    Scan(web=a, Game=Game, Article = Product, Price="1", Passwd=Payment_password)
